@@ -12,8 +12,8 @@ int in4 = 8;
 int ena = 3;
 int enb = 5;
 // Other variables
-bool autoMode = true;
-bool bluetooth = true; // ignore, if autoMode == true
+bool autoMode = false;
+bool bluetooth = false; // ignore, if autoMode == true
 
 //Initialization
 Ultrasonic ultrasonic(trig, echo);
@@ -31,16 +31,18 @@ void loop(){
     int d = checkDist(); // Get distance 
     Serial.println(d);
     if(d >= 20 && d <= 30){ // Back and right 
-      setEngine(LOW, HIGH, LOW, HIGH, 255, 255);
-      delay(500);
-      setEngine(HIGH, LOW, HIGH, LOW, 255, 50);
-    }else if(d <= 10){ // Back and right (long)
-      setEngine(LOW, HIGH, LOW, HIGH, 255, 255);
-      delay(1000);  
-      setEngine(HIGH, LOW, HIGH, LOW, 255, 50);
-    }else{  // Forward
-      Serial.println("FORWARD");
       setEngine(HIGH, LOW, HIGH, LOW, 255, 255);
+      delay(500);  
+      setEngine(HIGH, LOW, HIGH, LOW, 255, 25);
+      delay(500);
+      setEngine(LOW, HIGH, LOW, HIGH, 0, 0);
+    }else if(d <= 20){ // Back and right (long)
+      setEngine(HIGH, LOW, HIGH, LOW, 255, 255);
+      delay(1000);  
+      setEngine(HIGH, LOW, HIGH, LOW, 255, 25);
+      delay(500);
+    }else{  // Forward
+      setEngine(LOW, HIGH, LOW, HIGH, 255, 255);
     }
   }else{
     if(bluetooth){
@@ -48,19 +50,20 @@ void loop(){
         char command = Serial.read();
         Serial.println(command);
         if(command == 'f'){
-          setEngine(HIGH, LOW, HIGH, LOW, 255, 255);
+          toForward(100);
         }else if(command == 'b'){
-          setEngine(LOW, HIGH, LOW, HIGH, 255, 255);
+          toBack(100);
         }else if(command == 'l'){
-          setEngine(HIGH, LOW, HIGH, LOW, 255, 150);
+          toLeft(100);
         }else if(command == 'r'){
-          setEngine(HIGH, LOW, HIGH, LOW, 150, 255);
+          toRight(100);
         }else if(command == 's'){
           setEngine(HIGH, LOW, HIGH, LOW, 0, 0);
         }
       }
     }else{ // radio
-      // None
+      toForward(100);
+      Serial.println("f");
     }
   }
 }
@@ -75,4 +78,16 @@ void setEngine(int n1, int n2, int n3, int n4, int s1, int s2){
   digitalWrite(in4, n4);
   analogWrite(ena, s1);
   analogWrite(enb, s2);
+}
+void toLeft(int s){
+  setEngine(HIGH, LOW, HIGH, LOW, floor(2.5 * s), floor(1.5 * s));
+}
+void toRight(int s){
+  setEngine(HIGH, LOW, HIGH, LOW, floor(1.5 * s), floor(2.5 * s));
+}
+void toForward(int s){
+  setEngine(HIGH, LOW, HIGH, LOW, 150, 255);
+}
+void toBack(int s){
+  setEngine(LOW, HIGH, LOW, HIGH, floor(2.5 * s), floor(2.5 * s));
 }
